@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserLoginDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 
@@ -43,16 +44,26 @@ public class UserController {
 		return userGetDTOs;
 	}
 
-	@PostMapping("/users")
-	@ResponseStatus(HttpStatus.CREATED)
-	@ResponseBody
-	public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-		// convert API user to internal representation
-		User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+    @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserGetDTO register(@RequestBody UserPostDTO dto) {
+        User user = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(dto);
+        User createdUser = userService.register(user);
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(
+                createdUser);
+    }
 
-		// create user
-		User createdUser = userService.createUser(userInput);
-		// convert internal representation of user back to API
-		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
-	}
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public UserGetDTO login(@RequestBody UserLoginDTO dto) {
+        User user = userService.login(dto.getUsername(), dto.getPassword());
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    }
+
+    @PostMapping("/logout/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@PathVariable Long userId) {
+        userService.logout(userId);
+    }
+
 }
