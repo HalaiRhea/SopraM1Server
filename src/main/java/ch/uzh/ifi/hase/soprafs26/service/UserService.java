@@ -88,7 +88,13 @@ public class UserService {
         userRepository.saveAndFlush(user);
     }
 
-
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with id " + userId + " was not found"
+                ));
+    }
 
 
     /**

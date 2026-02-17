@@ -2,12 +2,15 @@ package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 
+import java.time.Instant;
+
 public class UserGetDTO {
 
 	private Long id;
 	private String username;
 	private String bio;
 	private UserStatus status;
+    private Instant creationDate;
 
 	public Long getId() {
 		return id;
@@ -40,4 +43,8 @@ public class UserGetDTO {
 	public void setStatus(UserStatus status) {
 		this.status = status;
 	}
+
+    public Instant getCreationDate() { return creationDate; }
+
+    public void setCreationDate(Instant creationDate) { this.creationDate = creationDate; }
 }
