@@ -23,8 +23,6 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String bio;
 
-    @Column(nullable = false, unique = true)
-    private String token;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -32,8 +30,6 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     private Instant creationDate;
-
-    // ===== GETTERS & SETTERS =====
 
     public Long getId() {
         return id;
@@ -65,14 +61,6 @@ public class User implements Serializable {
 
     public void setBio(String bio) {
         this.bio = bio;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public UserStatus getStatus() {

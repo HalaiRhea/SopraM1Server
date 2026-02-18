@@ -54,7 +54,6 @@ public class UserService {
         newUser.setPassword(newUser.getPassword());
         newUser.setCreationDate(Instant.now());
         newUser.setStatus(UserStatus.ONLINE);
-        newUser.setToken(UUID.randomUUID().toString());
 
         return userRepository.saveAndFlush(newUser);
     }
@@ -71,7 +70,6 @@ public class UserService {
         }
 
         user.setStatus(UserStatus.ONLINE);
-        user.setToken(UUID.randomUUID().toString());
 
         return userRepository.saveAndFlush(user);
     }
@@ -83,7 +81,6 @@ public class UserService {
                         HttpStatus.NOT_FOUND, "User not found"));
 
         user.setStatus(UserStatus.OFFLINE);
-        user.setToken(null);
 
         userRepository.saveAndFlush(user);
     }
