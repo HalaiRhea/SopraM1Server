@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserLoginDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 
@@ -73,5 +74,15 @@ public class UserController {
         User user = userService.getUserById(userId);
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
     }
+
+    @PutMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateUser(
+            @PathVariable Long userId,
+            @RequestBody UserPutDTO userPutDTO) {
+
+        userService.updatePassword(userId, userPutDTO);
+    }
+
 
 }

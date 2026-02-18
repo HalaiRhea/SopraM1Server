@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 
 import java.util.List;
 import java.util.UUID;
@@ -92,6 +93,26 @@ public class UserService {
                         "User with id " + userId + " was not found"
                 ));
     }
+
+    public void updatePassword(Long userId, UserPutDTO userPutDTO) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with id " + userId + " was not found"
+                ));
+
+        if (userPutDTO.getPassword() == null || userPutDTO.getPassword().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must not be empty"
+            );
+        }
+
+        user.setPassword(userPutDTO.getPassword());
+        userRepository.saveAndFlush(user);
+    }
+
 
 
     /**
