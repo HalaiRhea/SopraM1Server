@@ -12,66 +12,62 @@ import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Test class for the UserResource REST resource.
- *
- * @see UserService
- */
 @WebAppConfiguration
 @SpringBootTest
 public class UserServiceIntegrationTest {
 
-	@Qualifier("userRepository")
-	@Autowired
-	private UserRepository userRepository;
+    @Qualifier("userRepository")
+    @Autowired
+    private UserRepository userRepository;
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@BeforeEach
-	public void setup() {
-		userRepository.deleteAll();
-	}
+    @BeforeEach
+    public void setup() {
+        userRepository.deleteAll();
+    }
 
-	@Test
-	public void createUser_validInputs_success() {
-		// given
-		assertNull(userRepository.findByUsername("testUsername"));
+    @Test
+    public void register_validInputs_success() {
+        assertNull(userRepository.findByUsername("testUsername"));
 
-		User testUser = new User();
-		testUser.setName("testName");
-		testUser.setUsername("testUsername");
+        User user = new User();
+        user.setUsername("testUsername");
+        user.setPassword("password");
+        user.setBio("test bio");
 
-		// when
-		User createdUser = userService.createUser(testUser);
+        User createdUser = userService.register(user);
 
-		// then
-		assertEquals(testUser.getId(), createdUser.getId());
-		assertEquals(testUser.getName(), createdUser.getName());
-		assertEquals(testUser.getUsername(), createdUser.getUsername());
-		assertNotNull(createdUser.getToken());
-		assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
-	}
+        User persistedUser = userRepository.findByUsername("testUsername");
 
-	@Test
-	public void createUser_duplicateUsername_throwsException() {
-		assertNull(userRepository.findByUsername("testUsername"));
+        assertNotNull(persistedUser);
+        assertEquals(createdUser.getId(), persistedUser.getId());
+        assertEquals("testUsername", persistedUser.getUsername());
+        assertEquals("password", persistedUser.getPassword());
+        assertEquals("test bio", persistedUser.getBio());
+        assertEquals(UserStatus.ONLINE, persistedUser.getStatus());
+        assertNotNull(persistedUser.getCreationDate());
+    }
 
-		User testUser = new User();
-		testUser.setName("testName");
-		testUser.setUsername("testUsername");
-		userService.createUser(testUser);
+    @Test
+    public void register_duplicateUsername_throwsException() {
+        User user1 = new User();
+        user1.setUsername("testUsername");
+        user1.setPassword("password");
+        user1.setBio("bio");
 
-		// attempt to create second user with same username
-		User testUser2 = new User();
+        userService.register(user1);
 
-		// change the name but forget about the username
-		testUser2.setName("testName2");
-		testUser2.setUsername("testUsername");
+        User user2 = new User();
+        user2.setUsername("testUsername");
+        user2.setPassword("otherPassword");
+        user2.setBio("other bio");
 
-		// check that an error is thrown
-		assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser2));
-	}
+        assertThrows(ResponseStatusException.class, () -> userService.register(user2));
+    }
 }

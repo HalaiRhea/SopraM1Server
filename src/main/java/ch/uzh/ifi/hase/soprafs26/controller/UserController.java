@@ -34,11 +34,9 @@ public class UserController {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public List<UserGetDTO> getAllUsers() {
-		// fetch all users in the internal representation
 		List<User> users = userService.getUsers();
 		List<UserGetDTO> userGetDTOs = new ArrayList<>();
 
-		// convert each user to the API representation
 		for (User user : users) {
 			userGetDTOs.add(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
 		}
