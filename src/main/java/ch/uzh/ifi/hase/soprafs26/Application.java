@@ -26,13 +26,18 @@ public class Application {
     }
 
     @Bean
+    @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000")
-                        .allowedMethods("GET","POST","PUT","DELETE")
+                        .allowedOrigins(
+                                "http://localhost:3000",
+                                "https://sopra-fs26-schaerer-kai-server.nn.r.appspot.com"
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
                         .allowCredentials(true);
             }
         };

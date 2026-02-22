@@ -23,7 +23,6 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String bio;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status;
