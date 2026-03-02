@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -75,7 +76,6 @@ public class UserControllerTest {
 
     @Test
     public void createUser_validInput_userCreated() throws Exception {
-        // given
         User createdUser = new User();
         createdUser.setId(1L);
         createdUser.setUsername("testUsername");
@@ -100,5 +100,67 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.username", is(createdUser.getUsername())))
                 .andExpect(jsonPath("$.bio", is(createdUser.getBio())))
                 .andExpect(jsonPath("$.status", is(createdUser.getStatus().toString())));
+    }
+
+    @Test
+    public void getUserById_validId_userReturned() throws Exception {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testUser");
+        user.setBio("bio");
+        user.setStatus(UserStatus.ONLINE);
+        user.setCreationDate(Instant.now());
+
+        given(userService.getUserById(1L)).willReturn(user);
+
+        mockMvc.perform(get("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.username", is("testUser")))
+                .andExpect(jsonPath("$.bio", is("bio")))
+                .andExpect(jsonPath("$.status", is("ONLINE")));
+    }
+
+    @Test
+    public void getUserById_userNotFound_returns404() throws Exception {
+        given(userService.getUserById(99L))
+                .willThrow(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"));
+
+        mockMvc.perform(get("/users/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateUser_validInput_noContentReturned() throws Exception {
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setPassword("newPassword");
+
+        MockHttpServletRequestBuilder putRequest =
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userPutDTO));
+
+        mockMvc.perform(putRequest)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void updateUser_userNotFound_returns404() throws Exception {
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setPassword("newPassword");
+
+        Mockito.doThrow(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"))
+                .when(userService).updatePassword(Mockito.eq(99L), Mockito.any());
+
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .put("/users/99")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userPutDTO)))
+                .andExpect(status().isNotFound());
     }
 }

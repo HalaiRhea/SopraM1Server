@@ -11,7 +11,10 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPutDTO;
+
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -61,6 +64,68 @@ public class UserServiceTest {
                 assertThrows(ResponseStatusException.class, () -> userService.register(testUser));
 
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    public void getUserById_validInput_success() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+        User foundUser = userService.getUserById(1L);
+
+        assertNotNull(foundUser);
+        assertEquals(testUser.getId(), foundUser.getId());
+        assertEquals(testUser.getUsername(), foundUser.getUsername());
+        assertEquals(testUser.getBio(), foundUser.getBio());
+
+        verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void getUserById_userNotFound_throwsException() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class,
+                        () -> userService.getUserById(99L));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("99"));
+
+        verify(userRepository, times(1)).findById(99L);
+    }
+
+    @Test
+    public void updatePassword_validInputs_success() {
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setPassword("newSecurePassword");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.saveAndFlush(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.updatePassword(1L, userPutDTO);
+
+        assertEquals("newSecurePassword", testUser.getPassword());
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).saveAndFlush(testUser);
+    }
+
+    @Test
+    public void updatePassword_userNotFound_throwsException() {
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setPassword("newPassword");
+
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class,
+                        () -> userService.updatePassword(99L, userPutDTO));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("99"));
+
+        verify(userRepository, times(1)).findById(99L);
         verify(userRepository, never()).saveAndFlush(any());
     }
 }
